@@ -10,6 +10,7 @@ The Pacman game is the result of [Pushkar's work](https://github.com/pushkar/ud8
 python pacman.py -p PacmanQAgent -x 2000 -n 2010 -l smallGrid
 ```
 The `-l` parameter can be changed to use other maps (available in the layout folder).
+
 The `-p` parameter can be changed to use other types of q-learners.
 
 ### Learners
