@@ -11,9 +11,11 @@ The learners can be found in the `qlearningAgents.py` file.
 ```
 python pacman.py -p PacmanQAgent -x 2000 -n 2010 -l smallGrid
 ```
-The `-l` parameter can be changed to use other maps (available in the layout folder).
+* The `-l` parameter can be changed to use other maps (available in the layout folder).
+* The `-p` parameter can be changed to use other types of q-learners.
+* `-x` sets the number of training examples.
+* `-n` sets the total number of examples (train +  test)
 
-The `-p` parameter can be changed to use other types of q-learners.
 
 ### Learners
 * PacmanQAgent: basic Q-learning agent. It uses full states (the whole map), and thus doesn't scale when using big maps.
