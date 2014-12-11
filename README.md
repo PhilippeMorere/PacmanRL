@@ -5,6 +5,8 @@ Reinforcement learning algorithms applied to the Pacman game.
 
 The Pacman game is the result of [Pushkar's work](https://github.com/pushkar/ud820-proj) for the Udacity class ud820.
 
+The learners can be found in the `qlearningAgents.py` file.
+
 ### Run
 ```
 python pacman.py -p PacmanQAgent -x 2000 -n 2010 -l smallGrid
