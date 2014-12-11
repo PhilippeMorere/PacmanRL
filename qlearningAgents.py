@@ -2,7 +2,10 @@ from game import *
 from learningAgents import ReinforcementAgent
 from featureExtractors import *
 
-import random,util,math, numpy
+import random
+import util
+import math
+import numpy
 
 
 class QLearningAgent(ReinforcementAgent):
@@ -30,8 +33,6 @@ class QLearningAgent(ReinforcementAgent):
     def __init__(self, **args):
         "You can initialize Q-values here..."
         ReinforcementAgent.__init__(self, **args)
-
-        "*** YOUR CODE HERE ***"
         self.Q = {}
 
 
@@ -41,7 +42,6 @@ class QLearningAgent(ReinforcementAgent):
           Should return 0.0 if we never seen
           a state or (state,action) tuple
         """
-        "*** YOUR CODE HERE ***"
         if not state in self.Q:
             return 0.0
         else:
@@ -58,7 +58,6 @@ class QLearningAgent(ReinforcementAgent):
           there are no legal actions, which is the case at the
           terminal state, you should return a value of 0.0.
         """
-        "*** YOUR CODE HERE ***"
         max_val = None
         max_act = None
         for action in self.getLegalActions(state):
@@ -80,7 +79,6 @@ class QLearningAgent(ReinforcementAgent):
           are no legal actions, which is the case at the terminal state,
           you should return None.
         """
-        "*** YOUR CODE HERE ***"
         val, action = self.getValue(state)
         return action
 
@@ -96,7 +94,6 @@ class QLearningAgent(ReinforcementAgent):
           HINT: To pick randomly from a list, use random.choice(list)
         """
         # Pick Action
-        "*** YOUR CODE HERE ***"
         if util.flipCoin(self.epsilon):
             return random.choice(self.getLegalActions(state))
         else:
@@ -111,7 +108,6 @@ class QLearningAgent(ReinforcementAgent):
           NOTE: You should never call this function,
           it will be called on your behalf
         """
-        "*** YOUR CODE HERE ***"
         next_max_val, next_max_act = self.getValue(nextState)
         increment_q = reward + self.gamma * next_max_val
 
@@ -346,7 +342,6 @@ class ApproximateQAgent(PacmanQAgent):
         #self.alpha = 0.2
 
         # You might want to initialize weights here.
-        "*** YOUR CODE HERE ***"
         self.all_directions = [Directions.NORTH,
                                Directions.SOUTH,
                                Directions.EAST,
@@ -357,8 +352,7 @@ class ApproximateQAgent(PacmanQAgent):
         self.featureQ = [self.ghost_west, self.ghost_east, self.ghost_north, self.ghost_south,
                          self.no_wall_west, self.no_wall_east, self.no_wall_north, self.no_wall_south,
                          #self.posx, self.posy, self.biais,
-                         #self.close_dot_west, self.close_dot_east, self.close_dot_north, self.close_dot_south
-                         ]
+                         self.close_dot_west, self.close_dot_east, self.close_dot_north, self.close_dot_south]
         self.w = {}
         for action in self.all_directions:
             temp = []
@@ -372,7 +366,6 @@ class ApproximateQAgent(PacmanQAgent):
           Should return Q(state,action) = w * featureVector
           where * is the dotProduct operator
         """
-        "*** YOUR CODE HERE ***"
         result = 0
         for i in range(0, len(self.featureQ)):
             result += self.w[action][i] * self.featureQ[i](state)
@@ -382,7 +375,6 @@ class ApproximateQAgent(PacmanQAgent):
         """
            Should update your weights based on transition
         """
-        "*** YOUR CODE HERE ***"
         self.closestFood(state)
 
         next_max_val, next_max_act = self.getValue(nextState)
@@ -409,7 +401,6 @@ class ApproximateQAgent(PacmanQAgent):
         # did we finish training?
         if self.episodesSoFar == self.numTraining:
             # you might want to print your weights here for debugging
-            "*** YOUR CODE HERE ***"
             print "w: ", self.w
 
 
