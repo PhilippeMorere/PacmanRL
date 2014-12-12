@@ -417,10 +417,10 @@ class PerceptronQAgent(PacmanQAgent):
                                Directions.WEST,
                                Directions.STOP]
 
-        self.areaRad = 3
+        self.areaRad = 1
         self.biais = 1.0
         self.features = ['food', 'ghost', 'wall']
-        self.out_of_map = {'ghost': 0, 'wall': 0, 'food': 0}
+        self.out_of_map = {'ghost': 0, 'wall': 1, 'food': 0}
         self.w = []
         for feature in self.features:
             temp = []
@@ -430,74 +430,69 @@ class PerceptronQAgent(PacmanQAgent):
                     temp[i].append(1.0)
             self.w.append(temp)
 
-        # self.w[0] = [[0, 0, 0, 0, 0],
-        #             [0, 0, 0, 0, 0],
-        #             [0, 0, 0, 100, 0],
-        #             [0, 0, 0, 0, 0],
-        #             [0, 0, 0, 0, 0]]
-        #
-        # self.w[1] = [[0, 0, 0, 0, 0],
-        #             [0, 0, 100, 0, 0],
-        #             [100, 200, 0, -200, -100],
-        #             [0, 0, 100, 0, 0],
-        #             [0, 0, 0, 0, 0]]
-        #
-        # self.w[2] = [[0, 0, 0, 0, 0],
-        #             [0, 0, 0, 0, 0],
-        #             [0, 0, 0, -300, 0],
-        #             [0, 0, 0, 0, 0],
-        #             [0, 0, 0, 0, 0]]
+    def is_out_of_map(self, x, y, i, j, width, height):
+        # out of map?
+        if x + i - self.areaRad - 1 < 0:
+            return True
+        elif x + i - self.areaRad - 1 >= width:
+            return True
+        elif y + j - self.areaRad - 1 < 0:
+            return True
+        elif y + j - self.areaRad - 1 >= height:
+            return True
 
     def process_state(self, state, action):
-        food = state.getFood()
-        walls = state.getWalls()
+        # The origin is at the bottom, to the left
+        # The bottom left corner is (1, 1)
         x, y = state.getPacmanPosition()
-        agents = state.data.agentStates
+        # Make coordinates start at (1, 1)
+        x += 1
+        y += 1
 
-        # Create the matrix
+        # Food
+        food = state.getFood()
+        food_state = [[0 for col in range(2 * self.areaRad + 1)] for row in range(2 * self.areaRad + 1)]
+        for i in range(0, 2 * self.areaRad + 1):
+            for j in range(0, 2 * self.areaRad + 1):
+                if self.is_out_of_map(x, y, i, j, state.data.layout.width, state.data.layout.height):
+                    food_state[i][j] = self.out_of_map['food']
+                elif food[x + i - self.areaRad - 1][y + j - self.areaRad - 1]:
+                    food_state[i][j] = 1
+
+
+        # Ghost OK
+        agents = state.data.agentStates
+        # The agent's coordinates should be converted as well
+        ghost_state = [[0 for col in range(2 * self.areaRad + 1)] for row in range(2 * self.areaRad + 1)]
+        for i in range(0, 2 * self.areaRad + 1):
+            for j in range(0, 2 * self.areaRad + 1):
+                if self.is_out_of_map(x, y, i, j, state.data.layout.width, state.data.layout.height):
+                    ghost_state[i][j] = self.out_of_map['ghost']
+                else:
+                    for a in range(1, state.getNumAgents()):
+                        if agents[a].configuration.getPosition() == \
+                                (x + i - self.areaRad - 1, y + j - self.areaRad - 1):
+                            ghost_state[i][j] = 1
+                            break
+
+        # Wall
+        walls = state.getWalls()
+        wall_state = [[0 for col in range(2 * self.areaRad + 1)] for row in range(2 * self.areaRad + 1)]
+        for i in range(0, 2 * self.areaRad + 1):
+            for j in range(0, 2 * self.areaRad + 1):
+                if self.is_out_of_map(x, y, i, j, state.data.layout.width, state.data.layout.height):
+                    wall_state[i][j] = self.out_of_map['wall']
+                elif walls[x + i - self.areaRad - 1][y + j - self.areaRad - 1]:
+                    wall_state[i][j] = 1
+
         uni_state = []
         for feature in self.features:
-            temp = []
-            for i in range(0, 2 * self.areaRad + 1):
-                temp.append([])
-                for j in range(0, 2 * self.areaRad + 1):
-                    # out of map?
-                    if x + i - self.areaRad < 0:
-                        temp[i].append(self.out_of_map[feature])
-                        continue
-                    elif x + i - self.areaRad >= state.data.layout.width:
-                        temp[i].append(self.out_of_map[feature])
-                        continue
-                    elif y + j - self.areaRad < 0:
-                        temp[i].append(self.out_of_map[feature])
-                        continue
-                    elif y + j - self.areaRad >= state.data.layout.height:
-                        temp[i].append(self.out_of_map[feature])
-                        continue
-
-                    # Check the features
-                    if feature == 'ghost':
-                        found = False
-                        for a in range(1, state.getNumAgents()):
-                            if agents[a].configuration.getPosition() == \
-                                    (x + i - self.areaRad, state.data.layout.height - y - j - 1 + self.areaRad):
-                                found = True
-                                break
-                        if found:
-                            temp[i].append(1)
-                        else:
-                            temp[i].append(0)
-                    elif feature == 'food':
-                        if food[x + i - self.areaRad][state.data.layout.height - y - j - 1 + self.areaRad]:
-                            temp[i].append(1)
-                        else:
-                            temp[i].append(0)
-                    elif feature == 'wall':
-                        if walls[x + i - self.areaRad][state.data.layout.height - y - j - 1 + self.areaRad]:
-                            temp[i].append(1)
-                        else:
-                            temp[i].append(0)
-            uni_state.append(temp)
+            if feature == 'ghost':
+                uni_state.append(ghost_state)
+            elif feature == 'food':
+                uni_state.append(food_state)
+            elif feature == 'wall':
+                uni_state.append(wall_state)
 
         # Rotate it if needed because of the action
         for l in range(0, len(self.features)):
@@ -528,7 +523,7 @@ class PerceptronQAgent(PacmanQAgent):
             for j in range(0, 2 * self.areaRad + 1):
                 for k in range(0, 2 * self.areaRad + 1):
                     result += self.w[i][j][k] * uni_state[i][j][k]
-        return result
+        return result / float((2 * self.areaRad + 1) * (2 * self.areaRad + 1) * len(self.features) + 1)
 
     def update(self, state, action, nextState, reward):
         """
@@ -537,34 +532,29 @@ class PerceptronQAgent(PacmanQAgent):
         next_max_val, next_max_act = self.getValue(nextState)
         max_val = self.getQValue(state, action)
         difference = reward + self.gamma * next_max_val - max_val
-
+        #print reward, " + ", self.gamma * next_max_val, " - ", max_val, " = ", difference
         uni_state = self.process_state(state, action)
+
+        #Update biais
+        self.biais *= 1 - self.alpha
         self.biais += self.alpha * difference
+
+        # Update weights
         for i in range(0, len(self.features)):
             for j in range(0, 2 * self.areaRad + 1):
                 for k in range(0, 2 * self.areaRad + 1):
-                    #self.w[i][j][k] *= 1 - self.alpha
+                    self.w[i][j][k] *= 1 - self.alpha
                     self.w[i][j][k] += self.alpha * difference * uni_state[i][j][k]
 
     def final(self, state):
         "Called at the end of each game."
         # call the super-class final method
         PacmanQAgent.final(self, state)
-        self.epsilon *= 0.995
-        self.alpha *= 0.995
 
         # did we finish training?
         if self.episodesSoFar == self.numTraining:
-            print self.alpha
-            print self.epsilon
-            print ""
-            # you might want to print your weights here for debugging
             print "biais ", self.biais
             for i in range(0, len(self.features)):
                 print "\n"
                 print self.features[i]
                 print (numpy.array(self.w[i]))
-
-            uni_state = self.process_state(state, Directions.EAST)
-            print (numpy.array(uni_state))
-
