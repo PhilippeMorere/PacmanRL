@@ -417,10 +417,10 @@ class PerceptronQAgent(PacmanQAgent):
                                Directions.WEST,
                                Directions.STOP]
 
-        self.areaRad = 1
+        self.areaRad = 4
         self.biais = 1.0
         self.features = ['food', 'ghost', 'wall']
-        self.out_of_map = {'ghost': 0, 'wall': 1, 'food': 0}
+        self.out_of_map = {'ghost': 0, 'wall': 0, 'food': 0}
         self.w = []
         for feature in self.features:
             temp = []
@@ -429,6 +429,9 @@ class PerceptronQAgent(PacmanQAgent):
                 for j in range(0, 2 * self.areaRad + 1):
                     temp[i].append(1.0)
             self.w.append(temp)
+
+        # Try to load the weights
+        self.load_weights()
 
     def is_out_of_map(self, x, y, i, j, width, height):
         # out of map?
@@ -546,6 +549,26 @@ class PerceptronQAgent(PacmanQAgent):
                     self.w[i][j][k] *= 1 - self.alpha
                     self.w[i][j][k] += self.alpha * difference * uni_state[i][j][k]
 
+        # Apply weight constraints
+        #for i in range(0, len(self.features)):
+        #    sum_feature = math.fabs(sum(map(sum, self.w[i])))
+        #    self.w[i] = map(lambda row: map(lambda weight: weight / sum_feature, row), self.w[i])
+
+    def save_weights(self):
+        for i in range(0, len(self.features)):
+            f = open("weights" + str(self.areaRad) + "." + str(self.features[i]), "w")
+            f.write("# weights\n")
+            numpy.savetxt(f, numpy.array(self.w[i]).T)
+
+    def load_weights(self):
+        for i in range(0, len(self.features)):
+            file_name = "weights" + str(self.areaRad) + "." + str(self.features[i])
+            print file_name
+            if not os.path.exists(file_name):
+                break
+            print "loading"
+            self.w[i] = numpy.loadtxt(file_name, unpack=True)
+
     def final(self, state):
         "Called at the end of each game."
         # call the super-class final method
@@ -553,6 +576,7 @@ class PerceptronQAgent(PacmanQAgent):
 
         # did we finish training?
         if self.episodesSoFar == self.numTraining:
+            self.save_weights()
             print "biais ", self.biais
             for i in range(0, len(self.features)):
                 print "\n"
