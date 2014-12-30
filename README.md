@@ -34,5 +34,5 @@ python pacman.py -g DirectionalGhost -p ApproximateQAgent -x 400 -n 410 -l small
 
 Run it:
 ```
-python pacman.py -g DirectionalGhost -p PerceptionQAgent -x 2000 -n 2010 -d
+python pacman.py -g DirectionalGhost -p PerceptronQAgent -x 2000 -n 2010 -d
 ```
