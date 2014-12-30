@@ -9,7 +9,7 @@ The learners can be found in the `qlearningAgents.py` file.
 
 ### Run
 ```
-python pacman.py -p PacmanQAgent -x 2000 -n 2010 -l smallGrid
+python pacman.py -p PacmanQAgent -x 800 -n 810 -l smallGrid
 ```
 * The `-l` parameter can be changed to use other maps (available in the layout folder).
 * The `-p` parameter can be changed to use other types of q-learners.
@@ -28,7 +28,7 @@ python pacman.py -g DirectionalGhost -p PacmanQAgent -x 800 -n 810 -l smallGrid
 
 Run it:
 ```
-python pacman.py -g DirectionalGhost -p ApproximateQAgent -x 2000 -n 2010 -l smallGrid
+python pacman.py -g DirectionalGhost -p ApproximateQAgent -x 400 -n 410 -l smallGrid
 ```
 * PerceptronQAgent: Learns using a perceptron. The input is what is in the cells near-by. Unlike with the previous learner, Pacman has access to a range of cells around him (defined via parameter). [under development]
 
