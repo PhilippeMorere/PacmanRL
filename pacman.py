@@ -31,6 +31,8 @@ from game import Directions
 from game import Actions
 from util import nearestPoint
 from util import manhattanDistance
+from os import listdir
+from os.path import isfile, join
 import util, layout
 import sys, types, time, random, os
 
@@ -334,7 +336,7 @@ class PacmanRules:
       # TODO: cache numFood?
       numFood = state.getNumFood()
       if numFood == 0 and not state.data._lose:
-        state.data.scoreChange += 500
+        state.data.scoreChange += 50
         state.data._win = True
     # Eat capsule
     if( position in state.getCapsules() ):
@@ -409,7 +411,7 @@ class GhostRules:
       state.data._eaten[agentIndex] = True
     else:
       if not state.data._win:
-        state.data.scoreChange -= 500
+        state.data.scoreChange -= 50
         state.data._lose = True
   collide = staticmethod( collide )
 
@@ -486,6 +488,8 @@ def readCommand( argv ):
                     help=default('How many episodes are training (suppresses output)'), default=0)
   parser.add_option('--frameTime', dest='frameTime', type='float',
                     help=default('Time to delay between frames; <0 means keyboard'), default=0.1)
+  parser.add_option('-d', '--randomLayout', action='store_true', dest='randomLayout',
+                    help=default('Uses random generated layouts to train & test'), default=False)
 
   options, otherjunk = parser.parse_args(argv)
   if len(otherjunk) != 0:
@@ -498,6 +502,7 @@ def readCommand( argv ):
   # Choose a layout
   args['layout'] = layout.getLayout( options.layout )
   if args['layout'] == None: raise Exception("The layout " + options.layout + " cannot be found")
+  args['randomLayout'] = options.randomLayout
 
   # Choose a Pacman agent
   noKeyboard = options.gameToReplay == None and (options.textGraphics or options.quietGraphics)
@@ -584,12 +589,23 @@ def replayGame( layout, agents, actions, display ):
 
     display.finish()
 
-def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0, catchExceptions=False ):
+def runGames( layout, randomLayout, pacman, ghosts, display, numGames, record, numTraining = 0, catchExceptions=False ):
   import __main__
+  import layout as layoutPy
   __main__.__dict__['_display'] = display
 
   rules = ClassicGameRules()
   games = []
+  layouts = []
+
+  # Load all layouts
+  if randomLayout:
+      mypath = "layouts/generatedLayouts/"
+      layout_files = [f for f in listdir(mypath) if isfile(join(mypath, f))]
+      for lay in layout_files:
+          layout = layoutPy.getLayout("generatedLayouts/"+lay)
+          if layout == None: raise Exception("The layout ", lay, "cannot be found")
+          layouts.append(layout)
 
   for i in range( numGames ):
     beQuiet = i < numTraining
@@ -601,6 +617,11 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
     else:
         gameDisplay = display
         rules.quiet = False
+
+    if randomLayout:
+        #Pick a random layout
+        layout = layouts[(int)(random.random()*len(layouts))]
+
     game = rules.newGame( layout, pacman, ghosts, gameDisplay, beQuiet, catchExceptions=catchExceptions)
     game.run()
     if not beQuiet: games.append(game)

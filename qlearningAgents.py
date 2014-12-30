@@ -416,8 +416,8 @@ class PerceptronQAgent(PacmanQAgent):
                                Directions.EAST,
                                Directions.WEST,
                                Directions.STOP]
-
-        self.areaRad = 4
+        self.alpha = 0.01
+        self.areaRad = 5
         self.biais = 1.0
         self.features = ['food', 'ghost', 'wall']
         self.out_of_map = {'ghost': 0, 'wall': 0, 'food': 0}
@@ -539,14 +539,14 @@ class PerceptronQAgent(PacmanQAgent):
         uni_state = self.process_state(state, action)
 
         #Update biais
-        self.biais *= 1 - self.alpha
+        #self.biais *= 1 - self.alpha
         self.biais += self.alpha * difference
 
         # Update weights
         for i in range(0, len(self.features)):
             for j in range(0, 2 * self.areaRad + 1):
                 for k in range(0, 2 * self.areaRad + 1):
-                    self.w[i][j][k] *= 1 - self.alpha
+                    #self.w[i][j][k] *= 1 - self.alpha
                     self.w[i][j][k] += self.alpha * difference * uni_state[i][j][k]
 
         # Apply weight constraints
@@ -559,15 +559,24 @@ class PerceptronQAgent(PacmanQAgent):
             f = open("weights" + str(self.areaRad) + "." + str(self.features[i]), "w")
             f.write("# weights\n")
             numpy.savetxt(f, numpy.array(self.w[i]).T)
+        f = open("weights" + str(self.areaRad) + ".biais", "w")
+        f.write("# weights\n")
+        f.write(str(self.biais))
 
     def load_weights(self):
+        print "Loading weights from:"
         for i in range(0, len(self.features)):
             file_name = "weights" + str(self.areaRad) + "." + str(self.features[i])
-            print file_name
             if not os.path.exists(file_name):
                 break
-            print "loading"
+            print file_name
             self.w[i] = numpy.loadtxt(file_name, unpack=True)
+        file_name = "weights" + str(self.areaRad) + ".biais"
+        if not os.path.exists(file_name):
+            return
+        print file_name
+        self.biais = numpy.loadtxt(file_name, unpack=True)
+        print "biais: ", self.biais
 
     def final(self, state):
         "Called at the end of each game."
